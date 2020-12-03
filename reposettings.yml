@@ -1,9 +1,32 @@
+# Sample settings (all accepted values)
+all-settings:
+  branch-protection:
+    dissmiss-stale-reviews: false
+  features:
+    issues: true
+    projects: true
+    wiki: true
+    downloads: false
+  allow:
+    squash-merge: true
+    merge-commit: true
+    rebase-merge: true
+  delete-branch-on-merge: true
+
 # Default settings
 default-settings: &default-settings
   branch-protection:
     dissmiss-stale-reviews: false
+  features:
+    issues: true
+    wiki: false
+  allow:
+    squash-merge: true
+    merge-commit: true
+    rebase-merge: false
+  delete-branch-on-merge: true
 
-# List of repos to update
+# List of repos to update. This is the only key actually accessed by reposettings
 repos:
   roobre/tcache: *default-settings
   Counter-Tag/Player: *default-settings
