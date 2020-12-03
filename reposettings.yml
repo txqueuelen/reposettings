@@ -1,0 +1,9 @@
+# Default settings
+default-settings: &default-settings
+  branch-protection:
+    dissmiss-stale-reviews: false
+
+# List of repos to update
+repos:
+  roobre/tcache: *default-settings
+  Counter-Tag/Player: *default-settings
