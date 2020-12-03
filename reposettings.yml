@@ -2,6 +2,7 @@
 all-settings:
   branch-protection:
     dissmiss-stale-reviews: false
+    required-review-count: 1
   features:
     issues: true
     projects: true
@@ -13,20 +14,17 @@ all-settings:
     rebase-merge: true
   delete-branch-on-merge: true
 
-# Default settings
-default-settings: &default-settings
-  branch-protection:
-    dissmiss-stale-reviews: false
+# My custom settings
+my-settings: &my-settings
   features:
     issues: true
-    wiki: false
   allow:
     squash-merge: true
     merge-commit: true
-    rebase-merge: false
-  delete-branch-on-merge: true
+    rebase-merge: true
+  delete-branch-on-merge: false
 
 # List of repos to update. This is the only key actually accessed by reposettings
 repos:
-  roobre/tcache: *default-settings
-  Counter-Tag/Player: *default-settings
+  roobre/tcache: *my-settings
+  roobre/ffxivapi: *my-settings
