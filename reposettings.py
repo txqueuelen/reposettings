@@ -48,9 +48,6 @@ def repo_hook(repo: Repository, config):
     if 'delete-branch-on-merge' in config:
         newsettings['delete_branch_on_merge'] = config['delete-branch-on-merge']
 
-    if len(newsettings) == 0:
-        return
-
     if not has_changes(newsettings, repo):
         print(" Repo settings unchanged.")
         return
@@ -76,9 +73,6 @@ def branch_protection_hook(repo: Repository, config):
         if 'required-review-count' in prot_settings:
             newsettings['required_approving_review_count'] = int(prot_settings['required-review-count'])
 
-        if len(newsettings) == 0:
-            return
-
         if not has_changes(newsettings, branch.get_protection().__dict__):
             print(" Branch protection settings unchanged.")
             return
@@ -88,6 +82,9 @@ def branch_protection_hook(repo: Repository, config):
 
 
 def has_changes(new: dict, old) -> bool:
+    if len(new) == 0:
+        return False
+
     for k in new:
         if old.__getattribute__(k) != new[k]:
             return True
