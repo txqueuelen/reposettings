@@ -19,11 +19,10 @@ jobs:
       - uses: actions/checkout@v2
       - run: pip3 install -r requirements.txt
       - name: Run tests
-        run: python3 -m unittest discover
+        run: coverage run -m unittest discover
       - name: Report code coverage
         uses: paambaati/codeclimate-action@v2.7.4
         env:
           CC_TEST_REPORTER_ID: d075a7a68749e26b1932888304319b62fcd65d6318895c4cebdf75e3765447fa
         with:
-          coverageCommand: coverage run -m unittest discover
-          coverageLocations: .coverage
+          coverageCommand: coverage xml
