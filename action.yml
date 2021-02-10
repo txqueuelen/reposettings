@@ -1,0 +1,16 @@
+name: Reposettings action
+description: Store your github repository secrets as code
+inputs:
+  config:
+    description: YAML-formatted config reposettings (see reposettings.yml)
+    required: true
+  github_token:
+    description: Github token with enough permissions to change repository settings
+    required: true
+
+runs:
+  using: docker
+  image: roobre/reposettings
+  env:
+    CONFIG: ${{ inputs.config }}
+    GITHUB_TOKEN: ${{ inputs.github_token }}
