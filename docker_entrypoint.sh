@@ -9,4 +9,4 @@ if [ ! -e reposettings.yml ]; then
     exit 1
 fi
 
-python3 reposettings.py reposettings.yml
+python3 /reposettings/reposettings.py reposettings.yml
