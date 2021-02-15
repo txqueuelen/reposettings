@@ -10,7 +10,7 @@ inputs:
 
 runs:
   using: docker
-  image: roobre/reposettings
+  image: docker://roobre/reposettings
   env:
     CONFIG: ${{ inputs.config }}
     GITHUB_TOKEN: ${{ inputs.github_token }}
