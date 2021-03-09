@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, call
 
 import reposettings as rs
 
@@ -83,6 +83,135 @@ class TestBranchProtectionHook(unittest.TestCase):
             dismiss_stale_reviews=True,
             required_approving_review_count=2,
         )
+
+
+class TestLabelHook(unittest.TestCase):
+    def test_missing(self):
+        lh = rs.LabelHook()
+
+        labels = []
+        for i in range(5):
+            label = MagicMock()
+            label.color = f"aabb{i}{i}"
+            label.name = f"Test label {i}"
+            label.edit.return_value = None
+            label.delete.return_value = None
+            labels.append(label)
+
+        repomock = MagicMock()
+        repomock.get_labels.return_value = labels
+
+        lh.set(repomock, {
+            "labels": {
+                "Test label 2": {
+                    "description": "",
+                    "color": "",
+                },
+                "Test label 3": {
+                    "description": "",
+                    "color": "",
+                },
+            }
+        })
+
+        for i in range(5):
+            if i == 2 or i == 3:
+                labels[i].delete.assert_has_calls([])
+            else:
+                labels[i].delete.assert_called_once()
+
+    def test_edited(self):
+        lh = rs.LabelHook()
+
+        labels = []
+        for i in range(5):
+            label = MagicMock()
+            label.color = f"aabb{i}{i}"
+            label.name = f"Test label {i}"
+            label.description = f"Test description {i}"
+            label.edit.return_value = None
+            label.delete.return_value = None
+            labels.append(label)
+
+        repomock = MagicMock()
+        repomock.get_labels.return_value = labels
+
+        lh.set(repomock, {
+            "labels": {
+                "Test label 1": {
+                    "description": f"New description 1",
+                    "color": "111111",
+                },
+                "Test label 2": {
+                    "color": None
+                },
+                "Test label 3": {
+                    "description": "New Description 3",
+                    "color": None,
+                },
+            }
+        })
+
+        for i in range(5):
+            if i == 1:
+                labels[i].edit.assert_called_once_with(
+                    name=f"Test label 1",
+                    color="111111",
+                    description="New description 1"
+                )
+            elif i == 3:
+                labels[i].edit.assert_called_once_with(
+                    name=f"Test label 3",
+                    color=None,
+                    description="New Description 3",
+                )
+            else:
+                labels[i].edit.assert_has_calls([])
+
+    def test_created(self):
+        lh = rs.LabelHook()
+
+        labels = []
+        for i in range(1):
+            label = MagicMock()
+            label.color = f"aabb{i}{i}"
+            label.name = f"Test label {i}"
+            label.description = f"Test description {i}"
+            label.edit.return_value = None
+            label.delete.return_value = None
+            labels.append(label)
+
+        repomock = MagicMock()
+        repomock.get_labels.return_value = labels
+        repomock.create_label.return_value = None
+
+        lh.set(repomock, {
+            "labels": {
+                "Test label 0": {
+                    "description": f"New description 1",
+                    "color": "111111",
+                },
+                "Test label 1": {
+                    "description": f"New description 1",
+                    "color": "111111",
+                },
+                "Test label 2": {
+                },
+            }
+        })
+
+        repomock.create_label.assert_has_calls([
+            call(
+                name="Test label 1",
+                description="New description 1",
+                color="111111"
+            ),
+            call(
+                name="Test label 2",
+                description=None,
+                color=None
+            )
+        ])
 
 
 if __name__ == '__main__':

@@ -1,7 +1,7 @@
 import os
 import sys
 import re
-from github import Github, Repository
+from github import Github, Repository, Label
 import yaml
 
 
@@ -90,6 +90,7 @@ def main():
     rs = RepoSettings(gh)
     rs.use(RepoHook())
     rs.use(BranchProtectionHook())
+    rs.use(LabelHook())
 
     try:
         rs.apply(config)
@@ -164,6 +165,64 @@ class BranchProtectionHook(RepoSetter):
 
             print(" Applying branch protection settings...")
             branch.edit_protection(**newsettings)
+
+
+class LabelHook(RepoSetter):
+    """
+    LabelHook handles creating and updating labels for repos
+    """
+
+    @staticmethod
+    def name():
+        return "Repo labels settings hook"
+
+    @staticmethod
+    def set(repo: Repository, config):
+        print(" Processing labels protection settings...")
+
+        if 'labels' not in config:
+            print(" Nothing to do.")
+            return
+        conf_labels = config['labels']
+        unset_labels = conf_labels.copy()
+
+        repolabels = repo.get_labels()
+        for label in repolabels:
+            if label.name not in conf_labels:
+                print(f" Deleting label {label.name}")
+                label.delete()
+                continue
+
+            newlabel = conf_labels[label.name]
+            if not LabelHook.needs_update(label, newlabel):
+                continue
+
+            print(f" Editing label {label.name}")
+            label.edit(
+                name=label.name,
+                color=newlabel['color'] if 'color' in newlabel else label.color,
+                description=newlabel['description'] if 'description' in newlabel else label.description,
+            )
+            # Processed, remove from pending
+            del unset_labels[label.name]
+
+        for labelname in unset_labels:
+            newlabel = unset_labels[labelname]
+            print(f" Creating label {labelname}")
+            repo.create_label(
+                name=labelname,
+                color=newlabel['color'] if 'color' in newlabel else None,
+                description=newlabel['description'] if 'description' in newlabel else None,
+            )
+
+    @staticmethod
+    def needs_update(label: Label, new: dict):
+        if 'color' in new and new['color'] is not None and label.color != new['color']:
+            return True
+        if 'description' in new and new['description'] is not None and label.description != new['description']:
+            return True
+
+        return False
 
 
 if __name__ == '__main__':
