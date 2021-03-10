@@ -1,5 +1,6 @@
 import unittest
 from unittest.mock import MagicMock, call
+from github import GithubObject
 
 import reposettings as rs
 
@@ -212,8 +213,8 @@ class TestLabelHook(unittest.TestCase):
             ),
             call(
                 name="Test label 2",
-                description=None,
-                color=None
+                description=GithubObject.NotSet,
+                color=GithubObject.NotSet
             )
         ])
 

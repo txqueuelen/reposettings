@@ -1,7 +1,7 @@
 import os
 import sys
 import re
-from github import Github, Repository, Label
+from github import Github, Repository, Label, GithubObject
 import yaml
 
 
@@ -211,8 +211,10 @@ class LabelHook(RepoSetter):
             print(f" Creating label {newname}")
             repo.create_label(
                 name=newname,
-                color=newlabel['color'] if 'color' in newlabel else None,
-                description=newlabel['description'] if 'description' in newlabel else None,
+                color=newlabel['color'] if 'color' in newlabel and newlabel['color'] is not None
+                else GithubObject.NotSet,
+                description=newlabel['description'] if 'description' in newlabel and newlabel['description'] is not None
+                else GithubObject.NotSet,
             )
 
     @staticmethod
