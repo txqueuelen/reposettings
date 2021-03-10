@@ -228,7 +228,7 @@ class LabelHook(RepoSetter):
         return False
 
     @staticmethod
-    def replacement(newset: dict[dict], label: Label):
+    def replacement(newset: dict, label: Label):
         """
         Find in the config a suitable label for replacing the given one, checking keys and `replaces` property
         """
