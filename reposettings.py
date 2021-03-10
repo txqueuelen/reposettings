@@ -188,41 +188,61 @@ class LabelHook(RepoSetter):
 
         repolabels = repo.get_labels()
         for label in repolabels:
-            if label.name not in conf_labels:
+            newname, newlabel = LabelHook.replacement(conf_labels, label)
+            if newname is None:
+                # Not present in config, delete
                 print(f" Deleting label {label.name}")
                 label.delete()
                 continue
 
-            newlabel = conf_labels[label.name]
-            if not LabelHook.needs_update(label, newlabel):
-                continue
+            if newname != label.name or LabelHook.needs_update(label, newlabel):
+                print(f" Editing label {label.name}")
+                label.edit(
+                    name=newname,
+                    color=newlabel['color'] if 'color' in newlabel else label.color,
+                    description=newlabel['description'] if 'description' in newlabel else label.description,
+                )
 
-            print(f" Editing label {label.name}")
-            label.edit(
-                name=label.name,
-                color=newlabel['color'] if 'color' in newlabel else label.color,
-                description=newlabel['description'] if 'description' in newlabel else label.description,
-            )
             # Processed, remove from pending
-            del unset_labels[label.name]
+            del unset_labels[newname]
 
-        for labelname in unset_labels:
-            newlabel = unset_labels[labelname]
-            print(f" Creating label {labelname}")
+        for newname in unset_labels:
+            newlabel = unset_labels[newname]
+            print(f" Creating label {newname}")
             repo.create_label(
-                name=labelname,
+                name=newname,
                 color=newlabel['color'] if 'color' in newlabel else None,
                 description=newlabel['description'] if 'description' in newlabel else None,
             )
 
     @staticmethod
     def needs_update(label: Label, new: dict):
+        """
+        Checks whether a label needs an update
+        """
         if 'color' in new and new['color'] is not None and label.color != new['color']:
             return True
         if 'description' in new and new['description'] is not None and label.description != new['description']:
             return True
 
         return False
+
+    @staticmethod
+    def replacement(newset: dict[dict], label: Label):
+        """
+        Find in the config a suitable label for replacing the given one, checking keys and `replaces` property
+        """
+        # Fast path: dict has a key with the old label name
+        if label.name in newset:
+            return label.name, newset[label.name]
+
+        # Otherwise check `replaces` key for all new labels
+        for name in newset:
+            new = newset[name]
+            if 'replaces' in new and label.name in new['replaces']:
+                return name, new
+
+        return None, None
 
 
 if __name__ == '__main__':

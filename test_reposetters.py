@@ -100,6 +100,7 @@ class TestLabelHook(unittest.TestCase):
 
         repomock = MagicMock()
         repomock.get_labels.return_value = labels
+        repomock.create_label.return_value = None
 
         lh.set(repomock, {
             "labels": {
@@ -114,6 +115,7 @@ class TestLabelHook(unittest.TestCase):
             }
         })
 
+        repomock.create_label.assert_has_calls([])
         for i in range(5):
             if i == 2 or i == 3:
                 labels[i].delete.assert_has_calls([])
@@ -135,6 +137,7 @@ class TestLabelHook(unittest.TestCase):
 
         repomock = MagicMock()
         repomock.get_labels.return_value = labels
+        repomock.create_label.return_value = None
 
         lh.set(repomock, {
             "labels": {
@@ -152,6 +155,7 @@ class TestLabelHook(unittest.TestCase):
             }
         })
 
+        repomock.create_label.assert_has_calls([])
         for i in range(5):
             if i == 1:
                 labels[i].edit.assert_called_once_with(
@@ -212,6 +216,59 @@ class TestLabelHook(unittest.TestCase):
                 color=None
             )
         ])
+
+    def test_replacements(self):
+        lh = rs.LabelHook()
+
+        labels = []
+        for i in range(5):
+            label = MagicMock()
+            label.color = f"aabb{i}{i}"
+            label.name = f"Test label {i}"
+            label.description = f"Test description {i}"
+            label.edit.return_value = None
+            label.delete.return_value = None
+            labels.append(label)
+
+        repomock = MagicMock()
+        repomock.get_labels.return_value = labels
+        repomock.create_label.return_value = None
+
+        lh.set(repomock, {
+            "labels": {
+                "Replaces TL1": {
+                    "description": f"Replaced 1",
+                    "color": "111111",
+                    "replaces": ["Test label 1"]
+                },
+                "Replaces TL2": {
+                    "replaces": ["Test label 2"]
+                },
+                "Test label 3": {
+                    "description": None,
+                    "color": None,
+                },
+            }
+        })
+
+        repomock.create_label.assert_has_calls([])
+        for i in range(5):
+            if i == 0:
+                labels[i].delete.assert_called_once()
+            if i == 1:
+                labels[i].edit.assert_called_once_with(
+                    name=f"Replaces TL1",
+                    color="111111",
+                    description="Replaced 1"
+                )
+            elif i == 2:
+                labels[i].edit.assert_called_once_with(
+                    name=f"Replaces TL2",
+                    color="aabb22",
+                    description="Test description 2",
+                )
+            else:
+                labels[i].edit.assert_has_calls([])
 
 
 if __name__ == '__main__':
