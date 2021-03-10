@@ -178,7 +178,7 @@ class LabelHook(RepoSetter):
 
     @staticmethod
     def set(repo: Repository, config):
-        print(" Processing labels protection settings...")
+        print(" Processing labels...")
 
         if 'labels' not in config:
             print(" Nothing to do.")
