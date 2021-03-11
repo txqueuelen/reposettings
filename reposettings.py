@@ -192,16 +192,23 @@ class LabelHook(RepoSetter):
             if newname is None:
                 # Not present in config, delete
                 print(f" Deleting label {label.name}")
-                label.delete()
+                try:
+                    label.delete()
+                except Exception as e:
+                    print(f" Error deleting label: {str(e)}")
                 continue
 
             if newname != label.name or LabelHook.needs_update(label, newlabel):
                 print(f" Editing label {label.name}")
-                label.edit(
-                    name=newname,
-                    color=newlabel['color'] if 'color' in newlabel else label.color,
-                    description=newlabel['description'] if 'description' in newlabel else label.description,
-                )
+                try:
+                    label.edit(
+                        name=newname,
+                        color=newlabel['color'] if 'color' in newlabel else label.color,
+                        description=newlabel['description'] if 'description' in newlabel else label.description,
+                    )
+                except Exception as e:
+                    print(f" Error editing label: {str(e)}")
+                    continue
 
             # Processed, remove from pending
             del unset_labels[newname]
@@ -209,13 +216,16 @@ class LabelHook(RepoSetter):
         for newname in unset_labels:
             newlabel = unset_labels[newname]
             print(f" Creating label {newname}")
-            repo.create_label(
-                name=newname,
-                color=newlabel['color'] if 'color' in newlabel and newlabel['color'] is not None
-                else GithubObject.NotSet,
-                description=newlabel['description'] if 'description' in newlabel and newlabel['description'] is not None
-                else GithubObject.NotSet,
-            )
+            try:
+                repo.create_label(
+                    name=newname,
+                    color=newlabel['color'] if 'color' in newlabel and newlabel['color'] is not None
+                    else GithubObject.NotSet,
+                    description=newlabel['description'] if 'description' in newlabel and newlabel['description'] is not None
+                    else GithubObject.NotSet,
+                )
+            except Exception as e:
+                print(f" Error deleting label: {str(e)}")
 
     @staticmethod
     def needs_update(label: Label, new: dict):
