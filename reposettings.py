@@ -211,7 +211,8 @@ class LabelHook(RepoSetter):
                     continue
 
             # Processed, remove from pending
-            del unset_labels[newname]
+            if newname in unset_labels:
+                del unset_labels[newname]
 
         for newname in unset_labels:
             newlabel = unset_labels[newname]
