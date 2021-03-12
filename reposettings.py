@@ -151,17 +151,18 @@ class BranchProtectionHook(RepoSetter):
         prot_settings = config['branch-protection']
 
         newsettings = {}
+        if 'dissmiss-stale-reviews' in prot_settings:
+            newsettings['dismiss_stale_reviews'] = bool(prot_settings['dissmiss-stale-reviews'])
+        if 'required-review-count' in prot_settings:
+            newsettings['required_approving_review_count'] = int(prot_settings['required-review-count'])
+
         for branch in repo.get_branches():
             if not branch.protected:
                 continue
-            if 'dissmiss-stale-reviews' in prot_settings:
-                newsettings['dismiss_stale_reviews'] = bool(prot_settings['dissmiss-stale-reviews'])
-            if 'required-review-count' in prot_settings:
-                newsettings['required_approving_review_count'] = int(prot_settings['required-review-count'])
 
             if not RepoSetter.has_changes(newsettings, branch.get_protection()):
-                print(" Branch protection settings unchanged.")
-                return
+                print(f" Branch protection settings for {branch.name} unchanged.")
+                continue
 
             print(" Applying branch protection settings...")
             branch.edit_protection(**newsettings)
