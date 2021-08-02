@@ -145,20 +145,21 @@ class BranchProtectionHook(RepoSetter):
     def set(repo: Repository, config):
         print(" Processing branch protection settings...")
 
-        if 'branch-protection' not in config:
+        if 'branch-protection' not in config and 'branch-protection-overrides' not in config:
             print(" Nothing to do.")
             return
-        prot_settings = config['branch-protection']
-
-        newsettings = {}
-        if 'dissmiss-stale-reviews' in prot_settings:
-            newsettings['dismiss_stale_reviews'] = bool(prot_settings['dissmiss-stale-reviews'])
-        if 'required-review-count' in prot_settings:
-            newsettings['required_approving_review_count'] = int(prot_settings['required-review-count'])
 
         for branch in repo.get_branches():
             if not branch.protected:
                 continue
+
+            rules = BranchProtectionHook.rules_for(branch.name, config)
+
+            newsettings = {}
+            if 'dissmiss-stale-reviews' in rules:
+                newsettings['dismiss_stale_reviews'] = bool(rules['dissmiss-stale-reviews'])
+            if 'required-review-count' in rules:
+                newsettings['required_approving_review_count'] = int(rules['required-review-count'])
 
             if not RepoSetter.has_changes(newsettings, branch.get_protection()):
                 print(f" Branch protection settings for {branch.name} unchanged.")
@@ -166,6 +167,18 @@ class BranchProtectionHook(RepoSetter):
 
             print(" Applying branch protection settings...")
             branch.edit_protection(**newsettings)
+
+    @staticmethod
+    def rules_for(branch_name: str, config):
+        if 'branch-protection-overrides' in config:
+            overrides = config['branch-protection-overrides']
+            if branch_name in overrides:
+                return overrides[branch_name]
+
+        if 'branch-protection' in config:
+            return config['branch-protection']
+
+        return {}
 
 
 class LabelHook(RepoSetter):
