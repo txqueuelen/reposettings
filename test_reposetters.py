@@ -60,10 +60,11 @@ class TestRepoHook(unittest.TestCase):
 
 
 class TestBranchProtectionHook(unittest.TestCase):
-    def test_set(self):
+    def test_set_global(self):
         bh = rs.BranchProtectionHook()
 
         branchmock = MagicMock()
+        branchmock.name = 'branchmock'
         branchmock.protected = True
         branchmock.dismiss_stale_reviews = False
         branchmock.required_approving_review_count = 0
@@ -83,6 +84,93 @@ class TestBranchProtectionHook(unittest.TestCase):
         branchmock.edit_protection.assert_called_with(
             dismiss_stale_reviews=True,
             required_approving_review_count=2,
+        )
+
+    def test_set_override_overrides(self):
+        bh = rs.BranchProtectionHook()
+
+        branchmock = MagicMock()
+        branchmock.name = 'branchmock'
+        branchmock.protected = True
+        branchmock.dismiss_stale_reviews = False
+        branchmock.required_approving_review_count = 0
+
+        repomock = MagicMock()
+        repomock.get_branches.return_value = [
+            branchmock
+        ]
+
+        bh.set(repomock, {
+            "branch-protection": {
+                "dissmiss-stale-reviews": True,
+                "required-review-count": 2,
+            },
+            "branch-protection-overrides": {
+                "branchmock": {
+                    "required-review-count": 3,
+                }
+            }
+        })
+
+        branchmock.edit_protection.assert_called_with(
+            required_approving_review_count=3,
+        )
+
+    def test_set_override_does_not_override(self):
+        bh = rs.BranchProtectionHook()
+
+        branchmock = MagicMock()
+        branchmock.name = 'branchmock'
+        branchmock.protected = True
+        branchmock.dismiss_stale_reviews = False
+        branchmock.required_approving_review_count = 0
+
+        repomock = MagicMock()
+        repomock.get_branches.return_value = [
+            branchmock
+        ]
+
+        bh.set(repomock, {
+            "branch-protection": {
+                "dissmiss-stale-reviews": True,
+                "required-review-count": 2,
+            },
+            "branch-protection-overrides": {
+                "different": {
+                    "required-review-count": 3,
+                }
+            }
+        })
+
+        branchmock.edit_protection.assert_called_with(
+            dismiss_stale_reviews=True,
+            required_approving_review_count=2,
+        )
+
+    def test_set_override_only(self):
+        bh = rs.BranchProtectionHook()
+
+        branchmock = MagicMock()
+        branchmock.name = 'branchmock'
+        branchmock.protected = True
+        branchmock.dismiss_stale_reviews = False
+        branchmock.required_approving_review_count = 0
+
+        repomock = MagicMock()
+        repomock.get_branches.return_value = [
+            branchmock
+        ]
+
+        bh.set(repomock, {
+            "branch-protection-overrides": {
+                "branchmock": {
+                    "required-review-count": 3,
+                }
+            }
+        })
+
+        branchmock.edit_protection.assert_called_with(
+            required_approving_review_count=3,
         )
 
 

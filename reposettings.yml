@@ -1,8 +1,13 @@
 # Sample settings (all accepted values)
 all-settings:
   branch-protection:
+    # These rules are applied to all protected branches
     dissmiss-stale-reviews: false
     required-review-count: 1
+  branch-protection-overrides:
+    # Per-branch protection rule overrides. These are _not_ merged with the global rules above, but fully replace them.
+    gh-pages:
+      required-review-count: 0
   features:
     issues: true
     projects: true
