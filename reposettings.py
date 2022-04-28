@@ -266,9 +266,8 @@ class LabelHook(RepoSetter):
             return label.name, newset[label.name]
 
         # Otherwise check `replaces` key for all new labels
-        for name in newset:
-            new = newset[name]
-            if 'replaces' in new and label.name in new['replaces']:
+        for name, new in newset.items():
+            if label.name in new.get('replaces', []):
                 return name, new
 
         return None, None
