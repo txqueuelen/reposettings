@@ -387,7 +387,7 @@ class TestLabelHook(unittest.TestCase):
 
         repomock.create_label.assert_has_calls([])
         for i in range(5):
-            if i == 0:
+            if i in (0, 4):
                 labels[i].delete.assert_called_once()
             if i == 1:
                 labels[i].edit.assert_called_once_with(
@@ -402,6 +402,45 @@ class TestLabelHook(unittest.TestCase):
                     description="Test description 2",
                 )
             else:
+                labels[i].edit.assert_has_calls([])
+
+    def test_replacement_by_existent(self):
+        lh = rs.LabelHook()
+
+        labels = []
+        for i in range(2):
+            label = MagicMock()
+            label.color = f"aabb{i}{i}"
+            label.name = f"Test label {i}"
+            label.description = f"Test description {i}"
+            label.edit.return_value = None
+            label.delete.return_value = None
+            labels.append(label)
+
+        repomock = MagicMock()
+        repomock.get_labels.return_value = labels
+        repomock.create_label.return_value = None
+
+        lh.set(repomock, {
+            "labels": {
+                "Replaces TL0 and TL1": {
+                    "description": "Replaced",
+                    "color": "111111",
+                    "replaces": ["Test label 0", "Test label 1"]
+                },
+            }
+        })
+
+        repomock.create_label.assert_has_calls([])
+        for i in range(2):
+            if i == 0:
+                labels[i].edit.assert_called_once_with(
+                    name=f"Replaces TL0 and TL1",
+                    color="111111",
+                    description="Replaced"
+                )
+            else:
+                labels[i].delete.assert_called_once()
                 labels[i].edit.assert_has_calls([])
 
 

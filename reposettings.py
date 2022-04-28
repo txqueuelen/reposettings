@@ -1,6 +1,7 @@
 import os
 import sys
 import re
+from collections.abc import Container
 from github import Github, Repository, Label, GithubObject
 import yaml
 
@@ -202,9 +203,10 @@ class LabelHook(RepoSetter):
         conf_labels = config['labels']
         unset_labels = conf_labels.copy()
 
-        repolabels = repo.get_labels()
+        repolabels = [l for l in repo.get_labels()]  # iter to avoid fetching labels more than once
+        existentLabelNames = {l.name for l in repolabels}
         for label in repolabels:
-            newname, newlabel = LabelHook.replacement(conf_labels, label)
+            newname, newlabel = LabelHook.replacement(conf_labels, label, existentLabelNames)
             if newname is None:
                 # Not present in config, delete
                 print(f" Deleting label {label.name}")
@@ -222,6 +224,7 @@ class LabelHook(RepoSetter):
                         color=newlabel['color'] if 'color' in newlabel else label.color,
                         description=newlabel['description'] if 'description' in newlabel else label.description,
                     )
+                    existentLabelNames.add(newname)
                 except Exception as e:
                     print(f" Error editing label: {str(e)}")
                     continue
@@ -257,7 +260,7 @@ class LabelHook(RepoSetter):
         return False
 
     @staticmethod
-    def replacement(newset: dict, label: Label):
+    def replacement(newset: dict, label: Label, existentLabelNames: Container):
         """
         Find in the config a suitable label for replacing the given one, checking keys and `replaces` property
         """
@@ -265,9 +268,9 @@ class LabelHook(RepoSetter):
         if label.name in newset:
             return label.name, newset[label.name]
 
-        # Otherwise check `replaces` key for all new labels
+        # Otherwise check `replaces` key for all new labels, and honor it unless the replacement already exists
         for name, new in newset.items():
-            if label.name in new.get('replaces', []):
+            if label.name in new.get('replaces', []) and name not in existentLabelNames:
                 return name, new
 
         return None, None
