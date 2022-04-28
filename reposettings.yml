@@ -8,6 +8,7 @@ all-settings:
     # Per-branch protection rule overrides. These are _not_ merged with the global rules above, but fully replace them.
     gh-pages:
       required-review-count: 0
+  protect-default-branch: true # If set to true, it will protect the project's default branch applying 'branch-protection' rules
   features:
     issues: true
     projects: true

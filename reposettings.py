@@ -142,15 +142,17 @@ class BranchProtectionHook(RepoSetter):
         return "Branch protection settings hook"
 
     @staticmethod
-    def set(repo: Repository, config):
+    def set(repo: Repository.Repository, config):
         print(" Processing branch protection settings...")
 
         if 'branch-protection' not in config and 'branch-protection-overrides' not in config:
             print(" Nothing to do.")
             return
 
+        should_protect_default_branch = config.get('protect-default-branch')
+
         for branch in repo.get_branches():
-            if not branch.protected:
+            if not (branch.protected or (should_protect_default_branch and repo.default_branch == branch.name)):
                 continue
 
             rules = BranchProtectionHook.rules_for(branch.name, config)
