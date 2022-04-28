@@ -221,8 +221,8 @@ class LabelHook(RepoSetter):
                 try:
                     label.edit(
                         name=newname,
-                        color=newlabel['color'] if 'color' in newlabel else label.color,
-                        description=newlabel['description'] if 'description' in newlabel else label.description,
+                        color=newlabel.get('color', label.color),
+                        description=newlabel.get('description', label.description)
                     )
                     existentLabelNames.add(newname)
                 except Exception as e:
@@ -239,10 +239,8 @@ class LabelHook(RepoSetter):
             try:
                 repo.create_label(
                     name=newname,
-                    color=newlabel['color'] if 'color' in newlabel and newlabel['color'] is not None
-                    else GithubObject.NotSet,
-                    description=newlabel['description'] if 'description' in newlabel and newlabel['description'] is not None
-                    else GithubObject.NotSet,
+                    color=newlabel.get('color') or GithubObject.NotSet,
+                    description=newlabel.get('description') or GithubObject.NotSet,
                 )
             except Exception as e:
                 print(f" Error deleting label: {str(e)}")
@@ -252,12 +250,9 @@ class LabelHook(RepoSetter):
         """
         Checks whether a label needs an update
         """
-        if 'color' in new and new['color'] is not None and label.color != new['color']:
-            return True
-        if 'description' in new and new['description'] is not None and label.description != new['description']:
-            return True
-
-        return False
+        newColor = new.get('color') or label.color
+        newDescription = new.get('description') or label.description
+        return newColor != label.color or newDescription != label.description
 
     @staticmethod
     def replacement(newset: dict, label: Label, existentLabelNames: Container):

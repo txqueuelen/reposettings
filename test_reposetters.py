@@ -387,8 +387,6 @@ class TestLabelHook(unittest.TestCase):
 
         repomock.create_label.assert_has_calls([])
         for i in range(5):
-            if i in (0, 4):
-                labels[i].delete.assert_called_once()
             if i == 1:
                 labels[i].edit.assert_called_once_with(
                     name=f"Replaces TL1",
@@ -401,7 +399,10 @@ class TestLabelHook(unittest.TestCase):
                     color="aabb22",
                     description="Test description 2",
                 )
+            elif i == 3:
+                labels[i].edit.assert_has_calls([])
             else:
+                labels[i].delete.assert_called_once()
                 labels[i].edit.assert_has_calls([])
 
     def test_replacement_by_existent(self):
