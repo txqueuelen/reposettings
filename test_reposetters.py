@@ -418,9 +418,12 @@ class TestLabelHook(unittest.TestCase):
             label.delete.return_value = None
             labels.append(label)
 
+        issues = [MagicMock(), MagicMock()]
+
         repomock = MagicMock()
         repomock.get_labels.return_value = labels
         repomock.create_label.return_value = None
+        repomock.get_issues.return_value = issues
 
         lh.set(repomock, {
             "labels": {
@@ -432,17 +435,21 @@ class TestLabelHook(unittest.TestCase):
             }
         })
 
+        # first label is edited
         repomock.create_label.assert_has_calls([])
-        for i in range(2):
-            if i == 0:
-                labels[i].edit.assert_called_once_with(
-                    name=f"Replaces TL0 and TL1",
-                    color="111111",
-                    description="Replaced"
-                )
-            else:
-                labels[i].delete.assert_called_once()
-                labels[i].edit.assert_has_calls([])
+        labels[0].edit.assert_called_once_with(
+            name=f"Replaces TL0 and TL1",
+            color="111111",
+            description="Replaced"
+        )
+
+        # second label is replaced by existent
+        repomock.get_issues.assert_called_once_with(labels=[labels[1]])
+        for issue in issues:  # replacement is added to all issues
+            issue.add_to_labels.assert_called_once_with("Replaces TL0 and TL1")
+        # then, the replaced label is deletd, not edited
+        labels[1].delete.assert_called_once()
+        labels[1].edit.assert_not_called()
 
 
 if __name__ == '__main__':

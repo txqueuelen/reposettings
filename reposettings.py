@@ -1,3 +1,4 @@
+from cProfile import label
 import os
 import sys
 import re
@@ -206,24 +207,18 @@ class LabelHook(RepoSetter):
         repolabels = [l for l in repo.get_labels()]  # iter to avoid fetching labels more than once
         existentLabelNames = {l.name for l in repolabels}
         for label in repolabels:
-            newname, newlabel = LabelHook.replacement(conf_labels, label, existentLabelNames)
-            if newname is None:
-                # Not present in config, delete
-                print(f" Deleting label {label.name}")
-                try:
-                    label.delete()
-                except Exception as e:
-                    print(f" Error deleting label: {str(e)}")
-                continue
+            newname, newsettings = LabelHook.replacement(conf_labels, label)
 
-            if newname != label.name or LabelHook.needs_update(label, newlabel):
+            if newname is None: # Not present in config, delete
+                LabelHook.delete_label(label)
+
+            elif label.name != newname and newname in existentLabelNames:
+                LabelHook.replace_label_with_existent(repo, label, newname)
+
+            elif LabelHook.needs_update(label, newname, newsettings):
                 print(f" Editing label {label.name}")
                 try:
-                    label.edit(
-                        name=newname,
-                        color=newlabel.get('color', label.color),
-                        description=newlabel.get('description', label.description)
-                    )
+                    LabelHook.update_label(label, newname, newsettings)
                     existentLabelNames.add(newname)
                 except Exception as e:
                     print(f" Error editing label: {str(e)}")
@@ -234,28 +229,21 @@ class LabelHook(RepoSetter):
                 del unset_labels[newname]
 
         for newname in unset_labels:
-            newlabel = unset_labels[newname]
-            print(f" Creating label {newname}")
-            try:
-                repo.create_label(
-                    name=newname,
-                    color=newlabel.get('color') or GithubObject.NotSet,
-                    description=newlabel.get('description') or GithubObject.NotSet,
-                )
-            except Exception as e:
-                print(f" Error deleting label: {str(e)}")
+            newsettings = unset_labels[newname]
+            LabelHook.create_label(repo, newname, newsettings)
+
 
     @staticmethod
-    def needs_update(label: Label, new: dict):
+    def needs_update(label: Label, newname :str, newsettings: dict):
         """
         Checks whether a label needs an update
         """
-        newColor = new.get('color') or label.color
-        newDescription = new.get('description') or label.description
-        return newColor != label.color or newDescription != label.description
+        newColor = newsettings.get('color') or label.color
+        newDescription = newsettings.get('description') or label.description
+        return label.name != newname or newColor != label.color or newDescription != label.description
 
     @staticmethod
-    def replacement(newset: dict, label: Label, existentLabelNames: Container):
+    def replacement(newset: dict, label: Label):
         """
         Find in the config a suitable label for replacing the given one, checking keys and `replaces` property
         """
@@ -263,12 +251,53 @@ class LabelHook(RepoSetter):
         if label.name in newset:
             return label.name, newset[label.name]
 
-        # Otherwise check `replaces` key for all new labels, and honor it unless the replacement already exists
+        # Otherwise check `replaces` key for all new label
         for name, new in newset.items():
-            if label.name in new.get('replaces', []) and name not in existentLabelNames:
+            if label.name in new.get('replaces', []):
                 return name, new
 
         return None, None
+
+    @staticmethod
+    def create_label(repo: Repository.Repository, newname: str, newsettings: dict):
+        print(f" Creating label {newname}")
+        try:
+            repo.create_label(
+                name=newname,
+                color=newsettings.get('color') or GithubObject.NotSet,
+                description=newsettings.get('description') or GithubObject.NotSet,
+            )
+        except Exception as e:
+            print(f" Error creating label: {e}")
+
+    @staticmethod
+    def update_label(label: Label.Label, newname: str, newsettings: dict):
+        label.edit(
+            name=newname,
+            color=newsettings.get('color', label.color),
+            description=newsettings.get('description', label.description)
+        )
+
+    @staticmethod
+    def delete_label(label: Label.Label):
+        try:
+            label.delete()
+        except Exception as e:
+            print(f"Error deleting '{label.name}' label: {e}")
+
+    @staticmethod
+    def replace_label_with_existent(repo: Repository.Repository, previous_label: Label.Label, new_label_name: str):
+        """
+        Updates all issues containing a label with its replacement and then removes the replaced one.
+        """
+        print(f" Replacing {previous_label.name} from all issues")
+        issues = repo.get_issues(labels=[previous_label])
+        for issue in issues:
+            try:
+                issue.add_to_labels(new_label_name)
+            except Exception as e:
+                print(f" Error adding label '{new_label_name}' to issue #{issue.number}")
+        LabelHook.delete_label(previous_label)
 
 
 if __name__ == '__main__':
