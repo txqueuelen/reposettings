@@ -69,9 +69,15 @@ class TestBranchProtectionHook(unittest.TestCase):
         branchmock.dismiss_stale_reviews = False
         branchmock.required_approving_review_count = 0
 
+        unprotectedmock = MagicMock()
+        unprotectedmock.name = 'unprotected'
+        unprotectedmock.protected = False
+
         repomock = MagicMock()
+        repomock.default_branch = 'main'
         repomock.get_branches.return_value = [
-            branchmock
+            branchmock,
+            unprotectedmock,
         ]
 
         bh.set(repomock, {
@@ -85,6 +91,8 @@ class TestBranchProtectionHook(unittest.TestCase):
             dismiss_stale_reviews=True,
             required_approving_review_count=2,
         )
+
+        unprotectedmock.edit_protection.assert_not_called()
 
     def test_set_override_overrides(self):
         bh = rs.BranchProtectionHook()
@@ -172,6 +180,43 @@ class TestBranchProtectionHook(unittest.TestCase):
         branchmock.edit_protection.assert_called_with(
             required_approving_review_count=3,
         )
+
+    def test_protect_default_branch(self):
+        bh = rs.BranchProtectionHook()
+
+        defaultbranchmock = MagicMock()
+        defaultbranchmock.name = 'default'
+        defaultbranchmock.protected = False
+
+        branchmock = MagicMock()
+        branchmock.name = 'branchmock'
+        branchmock.protected = True
+
+        unprotectedbranchmock = MagicMock()
+        unprotectedbranchmock.name = 'unprotected'
+        unprotectedbranchmock.protected = False
+
+
+        repomock = MagicMock()
+        repomock.default_branch = 'default'
+        repomock.get_branches.return_value = [
+            defaultbranchmock, branchmock, unprotectedbranchmock
+        ]
+
+        bh.set(repomock, {
+            "branch-protection": {
+                "dissmiss-stale-reviews": True,
+                "required-review-count": 2,
+            },
+            "protect-default-branch": True
+        })
+
+        for branch in (defaultbranchmock, branchmock):
+            branch.edit_protection.assert_called_with(
+                dismiss_stale_reviews=True,
+                required_approving_review_count=2,
+            )
+        unprotectedbranchmock.edit_protection.assert_not_called()
 
 
 class TestLabelHook(unittest.TestCase):
