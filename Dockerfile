@@ -1,6 +1,5 @@
-FROM alpine:latest
+FROM python:latest
 
-RUN apk add python3 py3-pip py3-setuptools
 RUN mkdir /reposettings
 WORKDIR /reposettings
 
