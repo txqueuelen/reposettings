@@ -205,21 +205,21 @@ class LabelHook(RepoSetter):
         unset_labels = conf_labels.copy()
 
         repo_labels = [l for l in repo.get_labels()]  # iter to avoid fetching labels more than once
-        repo_labels_names = {l.name for l in repo_labels}
+        repo_label_names = {l.name for l in repo_labels}
         for label in repo_labels:
             newname, newsettings = LabelHook.replacement(conf_labels, label)
 
             if newname is None: # Not present in config, delete
                 LabelHook.delete_label(label)
 
-            elif label.name != newname and newname in existentLabelNames:
+            elif label.name != newname and newname in repo_label_names:
                 LabelHook.replace_label_with_existent(repo, label, newname)
 
             elif LabelHook.needs_update(label, newname, newsettings):
                 print(f" Editing label {label.name}")
                 try:
                     LabelHook.update_label(label, newname, newsettings)
-                    existentLabelNames.add(newname)
+                    repo_label_names.add(newname)
                 except Exception as e:
                     print(f" Error editing label: {str(e)}")
                     continue
