@@ -204,8 +204,8 @@ class LabelHook(RepoSetter):
         conf_labels = config['labels']
         unset_labels = conf_labels.copy()
 
-        repolabels = [l for l in repo.get_labels()]  # iter to avoid fetching labels more than once
-        existentLabelNames = {l.name for l in repolabels}
+        repo_labels = [l for l in repo.get_labels()]  # iter to avoid fetching labels more than once
+        repo_labels_names = {l.name for l in repolabels}
         for label in repolabels:
             newname, newsettings = LabelHook.replacement(conf_labels, label)
 
