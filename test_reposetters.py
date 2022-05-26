@@ -387,8 +387,6 @@ class TestLabelHook(unittest.TestCase):
 
         repomock.create_label.assert_has_calls([])
         for i in range(5):
-            if i == 0:
-                labels[i].delete.assert_called_once()
             if i == 1:
                 labels[i].edit.assert_called_once_with(
                     name=f"Replaces TL1",
@@ -401,8 +399,57 @@ class TestLabelHook(unittest.TestCase):
                     color="aabb22",
                     description="Test description 2",
                 )
-            else:
+            elif i == 3:
                 labels[i].edit.assert_has_calls([])
+            else:
+                labels[i].delete.assert_called_once()
+                labels[i].edit.assert_has_calls([])
+
+    def test_replacement_by_existent(self):
+        lh = rs.LabelHook()
+
+        labels = []
+        for i in range(2):
+            label = MagicMock()
+            label.color = f"aabb{i}{i}"
+            label.name = f"Test label {i}"
+            label.description = f"Test description {i}"
+            label.edit.return_value = None
+            label.delete.return_value = None
+            labels.append(label)
+
+        issues = [MagicMock(), MagicMock()]
+
+        repomock = MagicMock()
+        repomock.get_labels.return_value = labels
+        repomock.create_label.return_value = None
+        repomock.get_issues.return_value = issues
+
+        lh.set(repomock, {
+            "labels": {
+                "Replaces TL0 and TL1": {
+                    "description": "Replaced",
+                    "color": "111111",
+                    "replaces": ["Test label 0", "Test label 1"]
+                },
+            }
+        })
+
+        # first label is edited
+        repomock.create_label.assert_has_calls([])
+        labels[0].edit.assert_called_once_with(
+            name=f"Replaces TL0 and TL1",
+            color="111111",
+            description="Replaced"
+        )
+
+        # second label is replaced by existent
+        repomock.get_issues.assert_called_once_with(labels=[labels[1]])
+        for issue in issues:  # replacement is added to all issues
+            issue.add_to_labels.assert_called_once_with("Replaces TL0 and TL1")
+        # then, the replaced label is deletd, not edited
+        labels[1].delete.assert_called_once()
+        labels[1].edit.assert_not_called()
 
 
 if __name__ == '__main__':
