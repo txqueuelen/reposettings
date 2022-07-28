@@ -165,11 +165,12 @@ class BranchProtectionHook(RepoSetter):
             if 'required-review-count' in rules:
                 newsettings['required_approving_review_count'] = int(rules['required-review-count'])
 
-            if not RepoSetter.has_changes(newsettings, branch.get_protection()):
+            # We check changes unless the branch wasn't protected (default branch can be still unprotected)
+            if branch.protected and (not RepoSetter.has_changes(newsettings, branch.get_protection())):
                 print(f" Branch protection settings for {branch.name} unchanged.")
                 continue
 
-            print(" Applying branch protection settings...")
+            print(f" Applying branch protection settings to '{branch.name}'...")
             branch.edit_protection(**newsettings)
 
     @staticmethod
