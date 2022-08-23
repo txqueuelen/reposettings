@@ -166,7 +166,7 @@ class BranchProtectionHook(RepoSetter):
                 newsettings['required_approving_review_count'] = int(rules['required-review-count'])
 
             # If branch is not protected we cannot get current protection settings, so we cannot call has_changes and must apply changes blindly
-            if branch.protected
+            if branch.protected:
                 if not RepoSetter.has_changes(newsettings, branch.get_protection()):
                     print(f" Branch protection settings for {branch.name} unchanged.")
                     continue
