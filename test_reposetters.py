@@ -82,7 +82,7 @@ class TestBranchProtectionHook(unittest.TestCase):
 
         bh.set(repomock, {
             "branch-protection": {
-                "dissmiss-stale-reviews": True,
+                "dismiss-stale-reviews": True,
                 "required-review-count": 2,
             }
         })
@@ -110,7 +110,7 @@ class TestBranchProtectionHook(unittest.TestCase):
 
         bh.set(repomock, {
             "branch-protection": {
-                "dissmiss-stale-reviews": True,
+                "dismiss-stale-reviews": True,
                 "required-review-count": 2,
             },
             "branch-protection-overrides": {
@@ -140,7 +140,7 @@ class TestBranchProtectionHook(unittest.TestCase):
 
         bh.set(repomock, {
             "branch-protection": {
-                "dissmiss-stale-reviews": True,
+                "dismiss-stale-reviews": True,
                 "required-review-count": 2,
             },
             "branch-protection-overrides": {
@@ -205,7 +205,7 @@ class TestBranchProtectionHook(unittest.TestCase):
 
         bh.set(repomock, {
             "branch-protection": {
-                "dissmiss-stale-reviews": True,
+                "dismiss-stale-reviews": True,
                 "required-review-count": 2,
             },
             "protect-default-branch": True
@@ -218,6 +218,27 @@ class TestBranchProtectionHook(unittest.TestCase):
             )
         unprotectedbranchmock.edit_protection.assert_not_called()
 
+    def test_misspelled_dismiss(self):
+        bh = rs.BranchProtectionHook()
+
+        branchmock = MagicMock()
+        branchmock.name = 'branchmock'
+        branchmock.dismiss_stale_reviews = False
+
+        repomock = MagicMock()
+        repomock.get_branches.return_value = [
+            branchmock
+        ]
+
+        bh.set(repomock, {
+            "branch-protection": {
+                "dissmiss-stale-reviews": True,
+            },
+        })
+
+        branchmock.edit_protection.assert_called_with(
+            dismiss_stale_reviews=True,
+        )
 
 class TestLabelHook(unittest.TestCase):
     def test_missing(self):
