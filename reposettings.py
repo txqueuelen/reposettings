@@ -160,8 +160,13 @@ class BranchProtectionHook(RepoSetter):
             rules = BranchProtectionHook.rules_for(branch.name, config)
 
             newsettings = {}
+            # Historically dismiss has been misspelled as "dissmiss". To avoid breaking config, we read that too and
+            # print a warning.
             if 'dissmiss-stale-reviews' in rules:
+                print(" Warning: using deprecated 'dissmiss-stale-reviews', please replace it with 'dismiss-stale-reviews'")
                 newsettings['dismiss_stale_reviews'] = bool(rules['dissmiss-stale-reviews'])
+            if 'dismiss-stale-reviews' in rules:
+                newsettings['dismiss_stale_reviews'] = bool(rules['dismiss-stale-reviews'])
             if 'required-review-count' in rules:
                 newsettings['required_approving_review_count'] = int(rules['required-review-count'])
 
