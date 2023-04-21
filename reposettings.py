@@ -169,6 +169,10 @@ class BranchProtectionHook(RepoSetter):
                 newsettings['dismiss_stale_reviews'] = bool(rules['dismiss-stale-reviews'])
             if 'required-review-count' in rules:
                 newsettings['required_approving_review_count'] = int(rules['required-review-count'])
+            if 'bypass-pull-request-allowances' in rules:
+                newsettings['bypass_pull_request_allowances'] = rules['bypass-pull-request-allowances']
+            if 'enforce-admins' in rules:
+                newsettings['enforce_admins'] = bool(rules['enforce-admins'])
 
             # If branch is not protected we cannot get current protection settings, so we cannot call has_changes and must apply changes blindly
             if branch.protected:
