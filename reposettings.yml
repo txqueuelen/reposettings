@@ -4,6 +4,17 @@ all-settings:
     # These rules are applied to all protected branches
     dissmiss-stale-reviews: false
     required-review-count: 1
+    bypass-pull-request-allowances:
+      apps: []
+      users: []
+      teams: []
+    required-linear-history: true
+    enforce-all-for-admins: true
+    push-restrictions:
+      apps: []
+      users: []
+      teams: []
+
   branch-protection-overrides:
     # Per-branch protection rule overrides. These are _not_ merged with the global rules above, but fully replace them.
     gh-pages:

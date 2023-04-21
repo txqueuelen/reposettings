@@ -68,6 +68,7 @@ class TestBranchProtectionHook(unittest.TestCase):
         branchmock.protected = True
         branchmock.dismiss_stale_reviews = False
         branchmock.required_approving_review_count = 0
+        branchmock.bypass_pull_request_allowances = {"users": []}
 
         unprotectedmock = MagicMock()
         unprotectedmock.name = 'unprotected'
@@ -207,6 +208,9 @@ class TestBranchProtectionHook(unittest.TestCase):
             "branch-protection": {
                 "dismiss-stale-reviews": True,
                 "required-review-count": 2,
+                "bypass-pull-request-allowances": {
+                    "apps": [ "renovate", "dependabot" ]
+                }
             },
             "protect-default-branch": True
         })
@@ -215,6 +219,7 @@ class TestBranchProtectionHook(unittest.TestCase):
             branch.edit_protection.assert_called_with(
                 dismiss_stale_reviews=True,
                 required_approving_review_count=2,
+                bypass_pull_request_allowances={'apps': ['renovate', 'dependabot']}
             )
         unprotectedbranchmock.edit_protection.assert_not_called()
 
