@@ -1,0 +1,14 @@
+on:
+  push:
+    branches:
+      - main
+      - master
+
+jobs:
+  test:
+    uses: ./.github/workflows/test.yaml
+
+  self-test:
+    uses: ./.github/workflows/sync-repo.yaml
+    with:
+      config-path: ./contrib/txqueuelen/self-test.yaml

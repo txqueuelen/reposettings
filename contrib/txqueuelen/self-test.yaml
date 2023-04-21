@@ -1,0 +1,13 @@
+# My custom settings
+my-settings: &my-settings
+  features:
+    issues: true
+  allow:
+    squash-merge: true
+    merge-commit: true
+    rebase-merge: true
+  delete-branch-on-merge: true
+
+# List of repos to update.
+repos:
+  txqueuelen/reposettings: *my-settings

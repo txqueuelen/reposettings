@@ -1,0 +1,26 @@
+name: sync-repo
+
+on:
+  workflow_call:
+    inputs:
+      config-path:
+        required: true
+        type: string
+
+jobs:
+  test:
+    name: Run unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - id: config
+        shell: bash
+        run: |
+          echo "yaml<<EOF"               >> $GITHUB_OUTPUT
+          cat ${{ inputs.config-path }}  >> $GITHUB_OUTPUT
+          echo "EOF"                     >> $GITHUB_OUTPUT
+
+      - uses: ./
+        with:
+          github_token: ${{ secrets.ACTUAL_TOKEN }}
+          config: "${{ steps.config.outputs.yaml }}"
