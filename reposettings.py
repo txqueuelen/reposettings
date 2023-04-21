@@ -171,8 +171,20 @@ class BranchProtectionHook(RepoSetter):
                 newsettings['required_approving_review_count'] = int(rules['required-review-count'])
             if 'bypass-pull-request-allowances' in rules:
                 newsettings['bypass_pull_request_allowances'] = rules['bypass-pull-request-allowances']
-            if 'enforce-admins' in rules:
-                newsettings['enforce_admins'] = bool(rules['enforce-admins'])
+            if 'required_linear_history' in rules:
+                newsettings['required-linear-history'] = bool(rules['required_linear_history'])
+            if 'app-push-restrictions' in rules:
+                newsettings['app_push_restrictions'] = rules['app-push-restrictions']
+            if 'required-linear-history' in rules:
+                newsettings['required_linear_history'] = bool(rules['required-linear-history'])
+            if 'allow-force-pushes' in rules:
+                newsettings['allow_force_pushes'] = bool(rules['allow-force-pushes'])
+            if 'required-conversation-resolution' in rules:
+                newsettings['required_conversation_resolution'] = bool(rules['required-conversation-resolution'])
+            if 'lock-branch' in rules:
+                newsettings['lock_branch'] = bool(rules['lock-branch'])
+            if 'allow-fork-syncing' in rules:
+                newsettings['allow_fork_syncing'] = bool(rules['allow-fork-syncing'])
 
             # If branch is not protected we cannot get current protection settings, so we cannot call has_changes and must apply changes blindly
             if branch.protected:
