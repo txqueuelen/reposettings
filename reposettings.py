@@ -170,7 +170,12 @@ class BranchProtectionHook(RepoSetter):
             if 'required-review-count' in rules:
                 newsettings['required_approving_review_count'] = int(rules['required-review-count'])
             if 'bypass-pull-request-allowances' in rules:
-                newsettings['bypass_pull_request_allowances'] = rules['bypass-pull-request-allowances']
+                if 'users' in rules['bypass-pull-request-allowances']:
+                    newsettings['dismissal_users'] = rules['bypass-pull-request-allowances']['users']
+                if 'teams' in rules['bypass-pull-request-allowances']:
+                    newsettings['dismissal_teams'] = rules['bypass-pull-request-allowances']['teams']
+                if 'apps' in rules['bypass-pull-request-allowances']:
+                    newsettings['dismissal_apps'] = rules['bypass-pull-request-allowances']['apps']
             if 'enforce-admins' in rules:
                 newsettings['enforce_admins'] = bool(rules['enforce-admins'])
             if 'required-linear-history' in rules:
