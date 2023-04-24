@@ -183,8 +183,17 @@ class BranchProtectionHook(RepoSetter):
                     newsettings['teams_bypass_pull_request_allowances'] = rules['allow-bypass-pull-request-reviews']['teams']
                 if 'apps' in rules['allow-bypass-pull-request-reviews']:
                     newsettings['apps_bypass_pull_request_allowances'] = rules['allow-bypass-pull-request-reviews']['apps']
+            if 'push-restrictions' in rules:
+                if 'users' in rules['push-restrictions']:
+                    newsettings['user_push_restrictions'] = rules['push-restrictions']['users']
+                if 'teams' in rules['push-restrictions']:
+                    newsettings['team_push_restrictions'] = rules['push-restrictions']['teams']
+                if 'apps' in rules['push-restrictions']:
+                    newsettings['app_push_restrictions'] = rules['push-restrictions']['apps']
             if 'enforce-admins' in rules:
                 newsettings['enforce_admins'] = bool(rules['enforce-admins'])
+            if 'restrict-pushes-create-matching-branches' in rules:
+                newsettings['block_creations'] = bool(rules['restrict-pushes-create-matching-branches'])
             if 'required-linear-history' in rules:
                 newsettings['required_linear_history'] = bool(rules['required-linear-history'])
             if 'allow-force-pushes' in rules:

@@ -208,10 +208,15 @@ class TestBranchProtectionHook(unittest.TestCase):
             "branch-protection": {
                 "dismiss-stale-reviews": True,
                 "required-review-count": 2,
+                "restrict-pushes-create-matching-branches": True,
                 "allow-bypass-pull-request-reviews": {
                     "users": [ "kang-makes", "roobre" ],
                     "apps": [ "renovate", "dependabot" ],
-                }
+                },
+                "push-restrictions": {
+                    "users": [ "kang-makes", "roobre" ],
+                    "teams": [ "txqueuelen" ],
+                },
             },
             "protect-default-branch": True
         })
@@ -220,8 +225,11 @@ class TestBranchProtectionHook(unittest.TestCase):
             branch.edit_protection.assert_called_with(
                 dismiss_stale_reviews=True,
                 required_approving_review_count=2,
+                block_creations=True,
+                users_bypass_pull_request_allowances=['kang-makes', 'roobre'],
                 apps_bypass_pull_request_allowances=['renovate', 'dependabot'],
-                users_bypass_pull_request_allowances=[ 'kang-makes', 'roobre' ],
+                user_push_restrictions=['kang-makes', 'roobre'],
+                team_push_restrictions=['txqueuelen'],
             )
         unprotectedbranchmock.edit_protection.assert_not_called()
 
