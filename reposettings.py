@@ -169,13 +169,20 @@ class BranchProtectionHook(RepoSetter):
                 newsettings['dismiss_stale_reviews'] = bool(rules['dismiss-stale-reviews'])
             if 'required-review-count' in rules:
                 newsettings['required_approving_review_count'] = int(rules['required-review-count'])
-            if 'bypass-pull-request-allowances' in rules:
-                if 'users' in rules['bypass-pull-request-allowances']:
-                    newsettings['dismissal_users'] = rules['bypass-pull-request-allowances']['users']
-                if 'teams' in rules['bypass-pull-request-allowances']:
-                    newsettings['dismissal_teams'] = rules['bypass-pull-request-allowances']['teams']
-                if 'apps' in rules['bypass-pull-request-allowances']:
-                    newsettings['dismissal_apps'] = rules['bypass-pull-request-allowances']['apps']
+            if 'dismiss-pull-request-reviews' in rules:
+                if 'users' in rules['dismiss-pull-request-reviews']:
+                    newsettings['dismissal_users'] = rules['dismiss-pull-request-reviews']['users']
+                if 'teams' in rules['dismiss-pull-request-reviews']:
+                    newsettings['dismissal_teams'] = rules['dismiss-pull-request-reviews']['teams']
+                if 'apps' in rules['dismiss-pull-request-reviews']:
+                    newsettings['dismissal_apps'] = rules['dismiss-pull-request-reviews']['apps']
+            if 'allow-bypass-pull-request-reviews' in rules:
+                if 'users' in rules['allow-bypass-pull-request-reviews']:
+                    newsettings['users_bypass_pull_request_allowances'] = rules['allow-bypass-pull-request-reviews']['users']
+                if 'teams' in rules['allow-bypass-pull-request-reviews']:
+                    newsettings['teams_bypass_pull_request_allowances'] = rules['allow-bypass-pull-request-reviews']['teams']
+                if 'apps' in rules['allow-bypass-pull-request-reviews']:
+                    newsettings['apps_bypass_pull_request_allowances'] = rules['allow-bypass-pull-request-reviews']['apps']
             if 'enforce-admins' in rules:
                 newsettings['enforce_admins'] = bool(rules['enforce-admins'])
             if 'required-linear-history' in rules:
