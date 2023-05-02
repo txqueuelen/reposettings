@@ -208,11 +208,13 @@ class TestBranchProtectionHook(unittest.TestCase):
             "branch-protection": {
                 "dismiss-stale-reviews": True,
                 "required-review-count": 2,
-                "restrict-pushes-create-matching-branches": True,
-                "allow-bypass-pull-request-reviews": {
-                    "users": [ "kang-makes", "roobre" ],
-                    "apps": [ "renovate", "dependabot" ],
+                "required-pull-request-reviews": {
+                    "bypass-pull-request-allowances": {
+                        "users": [ "kang-makes", "roobre" ],
+                        "apps": [ "renovate", "dependabot" ],
+                    },
                 },
+                "block-creations": True,
                 "push-restrictions": {
                     "users": [ "kang-makes", "roobre" ],
                     "teams": [ "txqueuelen" ],
