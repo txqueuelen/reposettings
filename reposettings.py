@@ -169,21 +169,34 @@ class BranchProtectionHook(RepoSetter):
                 newsettings['dismiss_stale_reviews'] = bool(rules['dismiss-stale-reviews'])
             if 'required-review-count' in rules:
                 newsettings['required_approving_review_count'] = int(rules['required-review-count'])
-            if 'dismiss-pull-request-reviews' in rules:
-                if 'users' in rules['dismiss-pull-request-reviews']:
-                    newsettings['dismissal_users'] = rules['dismiss-pull-request-reviews']['users']
-                if 'teams' in rules['dismiss-pull-request-reviews']:
-                    newsettings['dismissal_teams'] = rules['dismiss-pull-request-reviews']['teams']
-                if 'apps' in rules['dismiss-pull-request-reviews']:
-                    newsettings['dismissal_apps'] = rules['dismiss-pull-request-reviews']['apps']
-            if 'allow-bypass-pull-request-reviews' in rules:
-                if 'users' in rules['allow-bypass-pull-request-reviews']:
-                    newsettings['users_bypass_pull_request_allowances'] = rules['allow-bypass-pull-request-reviews']['users']
-                if 'teams' in rules['allow-bypass-pull-request-reviews']:
-                    newsettings['teams_bypass_pull_request_allowances'] = rules['allow-bypass-pull-request-reviews']['teams']
-                if 'apps' in rules['allow-bypass-pull-request-reviews']:
-                    newsettings['apps_bypass_pull_request_allowances'] = rules['allow-bypass-pull-request-reviews']['apps']
+
+            if 'required-pull-request-reviews' in rules:
+                if 'dismissal-restrictions' in rules["required-pull-request-reviews"]:
+                    dismissal_restrictions = rules["required-pull-request-reviews"]["dismissal-restrictions"]
+                    # PyGithub uses the parameter `dismissal_users`
+                    # GitHub API uses `required_pull_request_reviews.dismissal_restrictions.users`
+                    # Same for teams and apps.
+                    if 'users' in dismissal_restrictions:
+                        newsettings['dismissal_users'] = dismissal_restrictions['users']
+                    if 'teams' in dismissal_restrictions:
+                        newsettings['dismissal_teams'] = dismissal_restrictions['teams']
+                    if 'apps' in dismissal_restrictions:
+                        newsettings['dismissal_apps'] = dismissal_restrictions['apps']
+                if 'bypass-pull-request-allowances' in rules["required-pull-request-reviews"]:
+                    bypass_pull_request_allowances = rules["required-pull-request-reviews"]["bypass-pull-request-allowances"]
+                    # PyGithub uses the parameter `users_bypass_pull_request_allowances`
+                    # GitHub API uses `required_pull_request_reviews.bypass_pull_request_allowances.users`
+                    # Same for teams and apps.
+                    if 'users' in bypass_pull_request_allowances:
+                        newsettings['users_bypass_pull_request_allowances'] = bypass_pull_request_allowances['users']
+                    if 'teams' in bypass_pull_request_allowances:
+                        newsettings['teams_bypass_pull_request_allowances'] = bypass_pull_request_allowances['teams']
+                    if 'apps' in bypass_pull_request_allowances:
+                        newsettings['apps_bypass_pull_request_allowances'] = bypass_pull_request_allowances['apps']
             if 'push-restrictions' in rules:
+                # PyGithub uses the parameter `user_push_restrictions`
+                # GitHub API uses `push_restrictions.users`
+                # Same for teams and apps.
                 if 'users' in rules['push-restrictions']:
                     newsettings['user_push_restrictions'] = rules['push-restrictions']['users']
                 if 'teams' in rules['push-restrictions']:
@@ -192,8 +205,8 @@ class BranchProtectionHook(RepoSetter):
                     newsettings['app_push_restrictions'] = rules['push-restrictions']['apps']
             if 'enforce-admins' in rules:
                 newsettings['enforce_admins'] = bool(rules['enforce-admins'])
-            if 'restrict-pushes-create-matching-branches' in rules:
-                newsettings['block_creations'] = bool(rules['restrict-pushes-create-matching-branches'])
+            if 'block-creations' in rules:
+                newsettings['block_creations'] = bool(rules['block-creations'])
             if 'required-linear-history' in rules:
                 newsettings['required_linear_history'] = bool(rules['required-linear-history'])
             if 'allow-force-pushes' in rules:
