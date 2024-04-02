@@ -1,3 +1,3 @@
-PyYAML
-PyGithub @ git+https://github.com/txqueuelen/PyGithub@5711847b02b746b73d95e8f80163722e804de2cf  # las working commit of add-missing-attributes branch
-coverage
+PyYAML==6.0.1
+PyGithub==2.3.0
+coverage==7.4.4
